@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { WeekCell } from '.';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useUser } from '../../contexts/UserContext';
 import { GRID_CONFIG, SPACING } from '../../utils/constants';
 import { getWeekStatus } from '../../utils/dateUtils';
-import { WeekCell } from './WeekCell';
 
 interface LifeGridProps {
   weeksLived: number;
