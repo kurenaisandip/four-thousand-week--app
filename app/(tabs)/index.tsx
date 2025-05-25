@@ -1,75 +1,159 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LifeGrid } from '../../components/grid';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useLifeCalculations } from '../../hooks/useLifeCalculations';
+import { SPACING } from '../../utils/constants';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function GridScreen() {
+  const { colors, textStyles } = useTheme();
+  const { calculations, isCalculating } = useLifeCalculations();
 
-export default function HomeScreen() {
+  if (isCalculating || !calculations) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <Text style={[textStyles.body, { color: colors.textSecondary }]}>
+            Calculating your life...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header Stats */}
+        <View style={[styles.statsHeader, { backgroundColor: colors.surface }]}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, textStyles.h2, { color: colors.textPrimary }]}>
+              {calculations.weeksLived.toLocaleString()}
+            </Text>
+            <Text style={[styles.statLabel, textStyles.caption, { color: colors.textSecondary }]}>
+              Weeks Lived
+            </Text>
+          </View>
+          
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, textStyles.h2, { color: colors.textPrimary }]}>
+              {Math.round(calculations.lifeCompletionPercentage)}%
+            </Text>
+            <Text style={[styles.statLabel, textStyles.caption, { color: colors.textSecondary }]}>
+              Complete
+            </Text>
+          </View>
+          
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, textStyles.h2, { color: colors.textPrimary }]}>
+              {calculations.weeksRemaining.toLocaleString()}
+            </Text>
+            <Text style={[styles.statLabel, textStyles.caption, { color: colors.textSecondary }]}>
+              Weeks Left
+            </Text>
+          </View>
+        </View>
+
+        {/* Life Grid */}
+        <View style={styles.gridContainer}>
+          <Text style={[styles.gridTitle, textStyles.h3, { color: colors.textPrimary }]}>
+            Your Life in Weeks
+          </Text>
+          <Text style={[styles.gridSubtitle, textStyles.bodySmall, { color: colors.textSecondary }]}>
+            Each square represents one week of your life
+          </Text>
+          
+          <LifeGrid
+            weeksLived={calculations.weeksLived}
+            currentWeek={calculations.currentWeek}
+            totalWeeks={calculations.totalWeeks}
+          />
+        </View>
+
+        {/* Legend */}
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: colors.weekLived }]} />
+            <Text style={[styles.legendText, textStyles.caption, { color: colors.textSecondary }]}>
+              Weeks Lived
+            </Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: colors.weekCurrent }]} />
+            <Text style={[styles.legendText, textStyles.caption, { color: colors.textSecondary }]}>
+              Current Week
+            </Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: colors.weekFuture }]} />
+            <Text style={[styles.legendText, textStyles.caption, { color: colors.textSecondary }]}>
+              Future Weeks
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: SPACING.lg,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.md,
+    borderRadius: 12,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    marginTop: SPACING.xs,
+  },
+  gridContainer: {
+    padding: SPACING.md,
+  },
+  gridTitle: {
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  gridSubtitle: {
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.xl,
+    gap: SPACING.lg,
+  },
+  legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: SPACING.sm,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  legendText: {
+    fontSize: 12,
   },
-});
+}); 
